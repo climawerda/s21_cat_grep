@@ -1,5 +1,5 @@
 C = gcc -Wall -Werror -Wextra
-OBJ = main.o options.o 
+OBJ = main.o s21_grep.o 
 
 s21_cat: $(OBJ)
 	$(C) $(OBJ) -o s21_cat
