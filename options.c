@@ -1,11 +1,11 @@
-#ifndef OPTIONS_C
-#define OPTIONS_C
+#ifndef S21_CAT_C
+#define S21_CAT_C
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define BUFSIZE 4096
+#define BUFSIZE 1024
 
-static const char *const symb[255] = {
+static const char* const symb[255] = {
     [0] = "^@",      [1] = "^A",     [2] = "^B",     [3] = "^C",
     [4] = "^D",      [5] = "^E",     [6] = "^F",     [7] = "^G",
     [8] = "^H",      [9] = " ",      [10] = "\n",    [11] = "^K",
@@ -48,127 +48,122 @@ static const char *const symb[255] = {
     [156] = "M-^\\", [157] = "M-^]", [158] = "M-^^", [159] = "M-^_",
 };
 
-void flag_v(char c){
-    printf("%s", symb[(int)c]);
-}
+void flag_v(char c) { printf("%s", symb[(int)c]); }
 
 int optional(char* option, char* filename) {
-    FILE *f;
-    f = fopen(filename, "r");
-    if (strcmp(option, "-b") == 0 || strcmp(option, "--number-nonblank") == 0) {
-        int i = 1;
-        if (f == 0) {
-            printf("ERROR");
-            exit(1);
+  FILE* f;
+  f = fopen(filename, "r");
+  if (strcmp(option, "-b") == 0 || strcmp(option, "--number-nonblank") == 0) {
+    int i = 1;
+    if (f == 0) {
+      printf("cat: %s: No such file or directory", filename);
+      exit(1);
+    } else {
+      char line[BUFSIZE];
+      while (fgets(line, BUFSIZE, f) != NULL) {
+        if (strlen(line) <= 1) {
+          printf("%s", line);
         } else {
-            char line[BUFSIZE];
-            while (fgets(line, BUFSIZE, f) != NULL) {
-                if (strlen(line) <= 1) {
-                    printf("%s", line);
-                } else {
-                    printf("%d %s", i, line);
-                    i++;
-                }
-            }
+          printf("%6.d\t%s", i, line);
+          i++;
         }
-    } else if (strcmp(option, "-n") == 0 || strcmp(option, "--number") == 0) {
-        int i = 1;
-        if (f == 0) {
-            printf("ERROR");
-            exit(1);
-        } else {
-            char line[BUFSIZE];
-            while (fgets(line, BUFSIZE, f) != NULL) {
-                printf("%d %s", i, line);
-                i++;
-            }
-        } 
-    } else if (strcmp(option, "-E") == 0 || strcmp(option, "-e")==0) {
-        if (f == 0) {
-            printf("ERROR");
-            exit(1);
-        } else {
-            char line[BUFSIZE];
-            while (fgets(line, BUFSIZE, f) != NULL) {
-                for (int i = 0; i<strlen(line); i++) {
-                    if ((line[i] != '\n') && strcmp(option, "-E")==0) {
-                        printf("%c", line[i]);
-                    } else if ((line[i] != '\n') && strcmp(option, "-e")==0) {
-                        flag_v(line[i]);
-                    } else {
-                        printf("$\n");
-                    }
-                }
-
-            }
-        } 
-    } else if (strcmp(option, "-T")==0  || strcmp(option, "-t")==0) {
-        if (f == 0) {
-            printf("ERROR");
-            exit(1);
-        } else {
-            char line[BUFSIZE];
-            while (fgets(line, BUFSIZE, f) != NULL) {
-                for (int i = 0; i<strlen(line); i++) {
-                    if ((line[i] != '\t') && strcmp(option, "-T")==0) {
-                        printf("%c", line[i]);
-                    } else if ((line[i] != '\t') && strcmp(option, "-t")==0) {
-                        flag_v(line[i]);
-                    } else {
-                        printf("^I");
-                    }
-                }
-
-            }
-        } 
-    } else if (strcmp(option, "-s") == 0 || strcmp(option, "--squeeze-blank") == 0) {
-        if (f == 0) {
-            printf("ERROR");
-            exit(1);
-        } else {
-            char line[BUFSIZE];
-            int  flag = 0;
-            while (fgets(line, BUFSIZE, f) != NULL) {
-                if (strcmp(line, "\n") == 0 && flag == 0) {
-                    printf("%s", line);
-                    flag = 1;
-                } else if (strcmp(line, "\n") != 0) {
-                    printf("%s", line);
-                    flag = 0;
-                }
-            }
-        } 
+      }
     }
-    fclose(f);
-
-    return 0;
+  } else if (strcmp(option, "-n") == 0 || strcmp(option, "--number") == 0) {
+    int i = 1;
+    if (f == 0) {
+      printf("cat: %s: No such file or directory", filename);
+      exit(1);
+    } else {
+      char line[BUFSIZE];
+      while (fgets(line, BUFSIZE, f) != NULL) {
+        printf("%6.d\t%s", i, line);
+        i++;
+      }
+    }
+  } else if (strcmp(option, "-E") == 0 || strcmp(option, "-e") == 0) {
+    if (f == 0) {
+      printf("cat: %s: No such file or directory", filename);
+      exit(1);
+    } else {
+      char line[BUFSIZE];
+      while (fgets(line, BUFSIZE, f) != NULL) {
+        for (int i = 0; i < strlen(line); i++) {
+          if ((line[i] != '\n') && strcmp(option, "-E") == 0) {
+            printf("%c", line[i]);
+          } else if ((line[i] != '\n') && strcmp(option, "-e") == 0) {
+            flag_v(line[i]);
+          } else {
+            printf("$\n");
+          }
+        }
+      }
+    }
+  } else if (strcmp(option, "-T") == 0 || strcmp(option, "-t") == 0) {
+    if (f == 0) {
+      printf("cat: %s: No such file or directory", filename);
+      exit(1);
+    } else {
+      char line[BUFSIZE];
+      while (fgets(line, BUFSIZE, f) != NULL) {
+        for (int i = 0; i < strlen(line); i++) {
+          if ((line[i] != '\t') && strcmp(option, "-T") == 0) {
+            printf("%c", line[i]);
+          } else if ((line[i] != '\t') && strcmp(option, "-t") == 0) {
+            flag_v(line[i]);
+          } else {
+            printf("^I");
+          }
+        }
+      }
+    }
+  } else if (strcmp(option, "-s") == 0 ||
+             strcmp(option, "--squeeze-blank") == 0) {
+    if (f == 0) {
+      printf("cat: %s: No such file or directory", filename);
+      exit(1);
+    } else {
+      char line[BUFSIZE];
+      int flag = 0;
+      while (fgets(line, BUFSIZE, f) != NULL) {
+        if (strcmp(line, "\n") == 0 && flag == 0) {
+          printf("%s", line);
+          flag = 1;
+        } else if (strcmp(line, "\n") != 0) {
+          printf("%s", line);
+          flag = 0;
+        }
+      }
+    }
+  }
+  fclose(f);
+  return 0;
 }
-
-
 
 int nofile() {
-    char buf[BUFSIZE];
-    while(fgets(buf, BUFSIZE, stdin)) {
-        int len = strlen(buf);
-        buf[len-1] = '\0';
-        fprintf(stdout, "%s\n", buf);
-    }
-    return 0;
+  char buf[BUFSIZE];
+  while (fgets(buf, BUFSIZE, stdin)) {
+    int len = strlen(buf);
+    buf[len - 1] = '\0';
+    fprintf(stdout, "%s\n", buf);
+  }
+  return 0;
 }
 
-int nooption(char* filename){
-    FILE *f;
-    f = fopen(filename, "r");
-    if (f == 0) {
-        printf("ERROR");
-        exit(1);
-    } else {
-        char line[BUFSIZE];
-        while (fgets(line, BUFSIZE, f) != NULL) {
-            printf("%s", line);
-        }
+int nooption(char* filename) {
+  FILE* f;
+  f = fopen(filename, "r");
+  if (f == 0) {
+    printf("cat: %s: No such file or directory", filename);
+    exit(1);
+  } else {
+    char line[BUFSIZE];
+    while (fgets(line, BUFSIZE, f) != NULL) {
+      printf("%s", line);
     }
-    fclose(f);
-    return 0;
+  }
+  fclose(f);
+  return 0;
 }
 #endif
+
